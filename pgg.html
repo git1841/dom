@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Toolbox - Boîte à Outils du Développeur</title>
+    <link rel="stylesheet" href="css_dom.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>DOM </h1>
+            <p class="subtitle">manipulation du DOM</p>
+
+            <div class="toolbar">
+                <button class="btn" onclick="createNewElement()">
+                    Nouvel Élément
+                </button>
+                <button class="btn btn-success" onclick="exportHTML()">
+                    Exporter HTML
+                </button>
+                <button class="btn btn-warning" onclick="clearAll()">
+                    Tout Effacer
+                </button>
+                <button class="btn btn-info" onclick="showCheatSheet()">
+                    Aide Mémoire
+                </button>
+            </div>
+        </header>
+
+        <div class="dashboard">
+            <div class="sidebar">
+                <h3>Explorateur DOM</h3>
+                <div class="dom-tree" id="domTree">
+                    <div class="dom-node selected" data-id="preview">
+                        #preview-element
+                    </div>
+                    <div class="dom-node" data-id="child1">
+                        ↳ .child-element
+                    </div>
+                    <div class="dom-node" data-id="child2">
+                        ↳ .another-child
+                    </div>
+                </div>
+
+                <h3>Informations Élément</h3>
+                <div class="element-info" id="elementInfo">
+                    Élément: #preview-element
+                    Parent: body
+                    Enfants: 2
+                    Dimensions: 200x100px
+                </div>
+
+                <h3>Actions Rapides</h3>
+                <div class="toolbar" style="flex-direction: column;">
+                    <button class="btn" onclick="toggleVisibility()">
+                        Basculer Visibilité
+                    </button>
+                    <button class="btn btn-warning" onclick="resetStyles()">
+                        Réinitialiser Styles
+                    </button>
+                    <button class="btn btn-danger" onclick="removeElement()">
+                        Supprimer Élément
+                    </button>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Éditeur de Styles</div>
+                    </div>
+
+                    <div class="style-controls">
+                        <div class="control-group">
+                            <label for="width">Largeur</label>
+                            <input type="range" id="width" min="50" max="500" value="200" oninput="updateStyle()">
+                            <span id="widthValue">200px</span>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="height">Hauteur</label>
+                            <input type="range" id="height" min="50" max="500" value="100" oninput="updateStyle()">
+                            <span id="heightValue">100px</span>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="bgColor">Couleur de fond</label>
+                            <input type="color" id="bgColor" value="#4361ee" oninput="updateStyle()">
+                        </div>
+
+                        <div class="control-group">
+                            <label for="borderRadius">Border Radius</label>
+                            <input type="range" id="borderRadius" min="0" max="50" value="8" oninput="updateStyle()">
+                            <span id="radiusValue">8px</span>
+                        </div>
+                    </div>
+
+                    <div class="preview-area">
+                        <div class="preview-element" id="previewElement">
+                            Élément de Prévisualisation
+                            <div class="child-element">Enfant 1</div>
+                            <div class="another-child">Enfant 2</div>
+                        </div>
+                    </div>
+
+                    <div class="metrics">
+                        <div class="metric-card">
+                            <div class="metric-value" id="offsetWidth">200</div>
+                            <div class="metric-label">offsetWidth</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="clientWidth">184</div>
+                            <div class="metric-label">clientWidth</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="offsetHeight">100</div>
+                            <div class="metric-label">offsetHeight</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="clientHeight">84</div>
+                            <div class="metric-label">clientHeight</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Journal des Événements & Code</div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div>
+                            <h4>Événements Réçus</h4>
+                            <div class="events-log" id="eventsLog">
+                                <div class="log-entry">
+                                    <span class="timestamp">[10:30:15]</span> DOM chargé
+                                </div>
+                                <div class="log-entry">
+                                    <span class="timestamp">[10:30:16]</span> Élément #preview sélectionné
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4>Code Généré</h4>
+                            <div class="code-editor" id="generatedCode">
+                                // Styles appliqués à l'élément
+                                const element = document.getElementById('preview-element');
+                                element.style.width = '200px';
+                                element.style.height = '100px';
+                                element.style.backgroundColor = '#4361ee';
+                                element.style.borderRadius = '8px';
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="export-options">
+                        <button class="btn" onclick="copyCode()">
+                            Copier le Code
+                        </button>
+                        <button class="btn btn-success" onclick="testCode()">
+                            Tester le Code
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Élément actuellement sélectionné
+        let selectedElement = document.getElementById('previewElement');
+        let selectedNode = document.querySelector('[data-id="preview"]');
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function () {
+            updateMetrics();
+            logEvent('DOM Toolbox initialisé');
+        });
+
+        // Mise à jour des styles
+        function updateStyle() {
+            const width = document.getElementById('width').value;
+            const height = document.getElementById('height').value;
+            const bgColor = document.getElementById('bgColor').value;
+            const borderRadius = document.getElementById('borderRadius').value;
+
+            // Mettre à jour les valeurs affichées
+            document.getElementById('widthValue').textContent = width + 'px';
+            document.getElementById('heightValue').textContent = height + 'px';
+            document.getElementById('radiusValue').textContent = borderRadius + 'px';
+
+            // Appliquer les styles
+            selectedElement.style.width = width + 'px';
+            selectedElement.style.height = height + 'px';
+            selectedElement.style.backgroundColor = bgColor;
+            selectedElement.style.borderRadius = borderRadius + 'px';
+
+            // Mettre à jour les métriques
+            updateMetrics();
+
+            // Mettre à jour le code généré
+            updateGeneratedCode();
+
+            logEvent(`Styles mis à jour: ${width}px × ${height}px, bg: ${bgColor}`);
+        }
+
+        // Mettre à jour les métriques de dimensions
+        function updateMetrics() {
+            document.getElementById('offsetWidth').textContent = selectedElement.offsetWidth;
+            document.getElementById('clientWidth').textContent = selectedElement.clientWidth;
+            document.getElementById('offsetHeight').textContent = selectedElement.offsetHeight;
+            document.getElementById('clientHeight').textContent = selectedElement.clientHeight;
+        }
+
+        // Journalisation des événements
+        function logEvent(message) {
+            const log = document.getElementById('eventsLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="timestamp">[${new Date().toLocaleTimeString()}]</span> ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Mettre à jour le code généré
+        function updateGeneratedCode() {
+            const code = `// Styles appliqués à l'élément
+            const element = document.getElementById('${selectedElement.id}');
+            element.style.width = '${selectedElement.style.width}';
+            element.style.height = '${selectedElement.style.height}';
+            element.style.backgroundColor = '${selectedElement.style.backgroundColor}';
+            element.style.borderRadius = '${selectedElement.style.borderRadius}';
+            element.style.display = '${selectedElement.style.display}';`;
+
+            document.getElementById('generatedCode').textContent = code;
+        }
+
+        // Gestion de la sélection des nœuds DOM
+        document.querySelectorAll('.dom-node').forEach(node => {
+            node.addEventListener('click', function () {
+                // Désélectionner tous les nœuds
+                document.querySelectorAll('.dom-node').forEach(n => n.classList.remove('selected'));
+
+                // Sélectionner le nœud cliqué
+                this.classList.add('selected');
+                selectedNode = this;
+
+                // Mettre à jour les informations de l'élément
+                updateElementInfo();
+
+                logEvent(`Élément ${this.getAttribute('data-id')} sélectionné`);
+            });
+        });
+
+        // Mettre à jour les informations de l'élément
+        function updateElementInfo() {
+            const info = `Élément: ${selectedNode.getAttribute('data-id')}
+Parent: #domTree
+Enfants: ${selectedNode === document.querySelector('[data-id="preview"]') ? '2' : '0'}
+Dimensions: ${selectedElement.offsetWidth}×${selectedElement.offsetHeight}px
+Position: relative`;
+
+            document.getElementById('elementInfo').textContent = info;
+        }
+
+        // Actions rapides
+        function toggleVisibility() {
+            if (selectedElement.style.display === 'none') {
+                selectedElement.style.display = 'block';
+                logEvent('Élément affiché');
+            } else {
+                selectedElement.style.display = 'none';
+                logEvent('Élément masqué');
+            }
+            updateGeneratedCode();
+            updateMetrics();
+        }
+
+        function resetStyles() {
+            selectedElement.style = '';
+            document.getElementById('width').value = 200;
+            document.getElementById('height').value = 100;
+            document.getElementById('bgColor').value = '#007bff'; // Mise à jour de la couleur par défaut
+            document.getElementById('borderRadius').value = 8;
+
+            updateStyle();
+            logEvent('Styles réinitialisés');
+        }
+
+        function removeElement() {
+            if (selectedElement.parentNode && selectedNode.getAttribute('data-id') !== 'preview') {
+                selectedElement.parentNode.removeChild(selectedElement);
+                selectedNode.remove();
+                logEvent('Élément supprimé');
+            } else {
+                alert('Impossible de supprimer l\'élément principal');
+            }
+        }
+
+        // Fonctions d'export et utilitaires
+        function createNewElement() {
+            const newElement = document.createElement('div');
+            newElement.className = 'new-element';
+            newElement.textContent = 'Nouvel Élément';
+            newElement.style.padding = '10px';
+            newElement.style.margin = '5px';
+            newElement.style.background = '#e9ecef';
+            newElement.style.borderRadius = '4px';
+
+            selectedElement.appendChild(newElement);
+            logEvent('Nouvel élément créé');
+        }
+
+        function exportHTML() {
+            const html = selectedElement.outerHTML;
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'element-export.html';
+            a.click();
+            logEvent('HTML exporté');
+        }
+
+        function copyCode() {
+            const code = document.getElementById('generatedCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Code copié dans le presse-papier !');
+                logEvent('Code copié');
+            });
+        }
+
+        function testCode() {
+            const code = document.getElementById('generatedCode').textContent;
+            try {
+                // Extraire et exécuter le code JavaScript
+                const jsCode = code.split('\n').slice(1).join('\n');
+                eval(jsCode);
+                logEvent('Code testé avec succès');
+            } catch (error) {
+                logEvent(`Erreur lors du test: ${error.message}`);
+            }
+        }
+
+        function clearAll() {
+            if (confirm('Voulez-vous vraiment tout effacer ?')) {
+                selectedElement.style = '';
+                document.getElementById('eventsLog').innerHTML = '';
+                resetStyles();
+                logEvent('Tout a été réinitialisé');
+            }
+        }
+
+        function showCheatSheet() {
+            const cheatSheet = `
+DOM Toolbox - Aide Mémoire
+
+Dimensions:
+• offsetWidth/Height: inclut border + padding + contenu
+• clientWidth/Height: inclut padding + contenu (sans border)
+
+Styles:
+• element.style.property = 'value'
+• element.classList.add/remove/toggle('class')
+
+Navigation:
+• parentNode - élément parent
+• children - éléments enfants
+• nextElementSibling - élément suivant
+• previousElementSibling - élément précédent
+
+Événements:
+• addEventListener - écouter un événement
+• onclick - gestionnaire direct
+• onchange - changement de valeur
+            `;
+            alert(cheatSheet);
+        }
+
+        // Initialisation finale
+        updateGeneratedCode();
+        updateElementInfo();
+    </script>
+</body>
+
+</html>
